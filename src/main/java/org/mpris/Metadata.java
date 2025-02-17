@@ -254,7 +254,7 @@ public class Metadata {
             else if(v instanceof List) {
                 List<?> l = (List<?>) v;
                 if(l.isEmpty()) return "a{}";
-                return "a" + getTypeSignature(l.getFirst());
+                return "a" + getTypeSignature(l.get(0));
             } else if(v instanceof Map) {
                 Map<?, ?> m = (Map<?, ?>) v;
                 if(m.isEmpty()) return "a{}";
