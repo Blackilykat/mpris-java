@@ -10,6 +10,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -226,6 +227,41 @@ public class Metadata {
             }
             internalMap.put("xesam:userRating", new Variant<>(userRating, "d"));
             return this;
+        }
+
+        /**
+         * Clears all xesam metadata and replaces it with the argument
+         * @param metadata Map<String, String>: the xesam metadata to set where the key is the name of the attribute (e.g. <code>album</code>) without the <code>xesam:</code> prefix.
+         */
+        public Builder setXesamMetadata(Map<String, ?> metadata) throws IllegalArgumentException {
+            if(metadata == null) {
+                throw new IllegalArgumentException("metadata can't be null");
+            }
+
+            internalMap.entrySet().removeIf(entry -> entry.getKey().startsWith("xesam:"));
+
+            metadata.forEach((k, v) -> {
+                internalMap.put(k, new Variant<>(v, getTypeSignature(v)));
+            });
+            return this;
+        }
+
+        private static String getTypeSignature(Object v) {
+            if(v instanceof Long) return "x";
+            else if(v instanceof Integer) return "i";
+            else if(v instanceof Boolean) return "b";
+            else if(v instanceof Double) return "d";
+            else if(v instanceof List) {
+                List<?> l = (List<?>) v;
+                if(l.isEmpty()) return "a{}";
+                return "a" + getTypeSignature(l.getFirst());
+            } else if(v instanceof Map) {
+                Map<?, ?> m = (Map<?, ?>) v;
+                if(m.isEmpty()) return "a{}";
+                Map.Entry<?, ?> entry = m.entrySet().iterator().next();
+                return "a{" + getTypeSignature(entry.getKey()) + getTypeSignature(entry.getValue()) + "}";
+            }
+            return "s";
         }
 
         public Metadata build() throws IllegalArgumentException {
