@@ -241,7 +241,7 @@ public class Metadata {
             internalMap.entrySet().removeIf(entry -> entry.getKey().startsWith("xesam:"));
 
             metadata.forEach((k, v) -> {
-                internalMap.put(k, new Variant<>(v, getTypeSignature(v)));
+                internalMap.put("xesam:" + k, new Variant<>(v, getTypeSignature(v)));
             });
             return this;
         }
