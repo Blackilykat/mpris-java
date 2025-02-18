@@ -502,6 +502,12 @@ public class MPRISMP2None implements MediaPlayer2, Player, DBusProperties {
         return position;
     }
 
+    public void setPosition(int position) throws DBusException {
+        if(!canControl) throw new IllegalArgumentException("CanControl is false");
+        this.position = position;
+        update("Position", new Variant<>(position, "x"), MPRISObjectPaths.PLAYER);
+    }
+
     public double getMinimumRate() {
         return minimumRate;
     }
