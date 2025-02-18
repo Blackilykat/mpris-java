@@ -232,9 +232,13 @@ public class Metadata {
 
         /**
          * Clears all xesam metadata and replaces it with the argument
-         * @param metadata Map<String, String>: the xesam metadata to set where the key is the name of the attribute (e.g. <code>album</code>) without the <code>xesam:</code> prefix.
+         * @param metadata Map<String, List<?>>: the xesam metadata to set where the key is the name of the attribute
+         *                 (e.g. <code>album</code>) without the <code>xesam:</code> prefix.
+         *                 The value is a list of all values with that key. This means that if there is a single
+         *                 metadata value for <code>title</code>, the value in this map will be a list of 1 string,
+         *                 while if there's multiple <code>artist</code> tags, the value will be a list of multiple strings.
          */
-        public Builder setXesamMetadata(Map<String, ?> metadata) throws IllegalArgumentException {
+        public Builder setXesamMetadata(Map<String, List<?>> metadata) throws IllegalArgumentException {
             if(metadata == null) {
                 throw new IllegalArgumentException("metadata can't be null");
             }
@@ -242,20 +246,13 @@ public class Metadata {
             internalMap.entrySet().removeIf(entry -> entry.getKey().startsWith("xesam:"));
 
             metadata.forEach((k, v) -> {
+                if(v.isEmpty()) return;
                 String fullKey = "xesam:" + k;
-                if(!internalMap.containsKey(fullKey)) {
+                if(v.size() > 1) {
                     internalMap.put(fullKey, new Variant<>(v, getTypeSignature(v)));
                 } else {
-                    Object value = internalMap.get(fullKey);
-                    if(value instanceof List) {
-                        // this line of code is fueled by hope
-                        ((List<String>) value).add(v.toString());
-                    } else {
-                        List<String> list = new ArrayList<>();
-                        list.add(value.toString());
-                        list.add(v.toString());
-                        internalMap.put(fullKey, new Variant<>(list, "as"));
-                    }
+                    Object newV = v.get(0);
+                    internalMap.put(fullKey, new Variant<>(newV, getTypeSignature(newV)));
                 }
             });
             return this;
