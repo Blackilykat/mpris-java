@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -241,7 +242,21 @@ public class Metadata {
             internalMap.entrySet().removeIf(entry -> entry.getKey().startsWith("xesam:"));
 
             metadata.forEach((k, v) -> {
-                internalMap.put("xesam:" + k, new Variant<>(v, getTypeSignature(v)));
+                String fullKey = "xesam:" + k;
+                if(!internalMap.containsKey(fullKey)) {
+                    internalMap.put(fullKey, new Variant<>(v, getTypeSignature(v)));
+                } else {
+                    Object value = internalMap.get(fullKey);
+                    if(value instanceof List) {
+                        // this line of code is fueled by hope
+                        ((List<String>) value).add(v.toString());
+                    } else {
+                        List<String> list = new ArrayList<>();
+                        list.add(value.toString());
+                        list.add(v.toString());
+                        internalMap.put(fullKey, new Variant<>(list, "as"));
+                    }
+                }
             });
             return this;
         }
