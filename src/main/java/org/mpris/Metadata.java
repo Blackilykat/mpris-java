@@ -238,7 +238,7 @@ public class Metadata {
          *                 metadata value for <code>title</code>, the value in this map will be a list of 1 string,
          *                 while if there's multiple <code>artist</code> tags, the value will be a list of multiple strings.
          */
-        public Builder setXesamMetadata(Map<String, List<?>> metadata) throws IllegalArgumentException {
+        public Builder setXesamMetadata(Map<String, ? extends List<?>> metadata) throws IllegalArgumentException {
             if(metadata == null) {
                 throw new IllegalArgumentException("metadata can't be null");
             }
