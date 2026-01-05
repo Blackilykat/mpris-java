@@ -225,6 +225,44 @@ public class Metadata {
             return this;
         }
 
+		public Builder setXesamMetadata(Map<String, ? extends List<?>> metadata) throws IllegalArgumentException {
+			if(metadata == null) {
+				throw new IllegalArgumentException("metadata can't be null");
+			}
+
+			internalMap.entrySet().removeIf(entry -> entry.getKey().startsWith("xesam:"));
+
+			metadata.forEach((k, v) -> {
+				if(v.isEmpty()) return;
+				String fullKey = "xesam:" + k;
+				if(v.size() > 1) {
+					internalMap.put(fullKey, new Variant<>(v, getTypeSignature(v)));
+				} else {
+					Object newV = v.get(0);
+					internalMap.put(fullKey, new Variant<>(newV, getTypeSignature(newV)));
+				}
+			});
+			return this;
+		}
+
+		private static String getTypeSignature(Object v) {
+			if(v instanceof Long) return "x";
+			else if(v instanceof Integer) return "i";
+			else if(v instanceof Boolean) return "b";
+			else if(v instanceof Double) return "d";
+			else if(v instanceof List) {
+				List<?> l = (List<?>) v;
+				if(l.isEmpty()) return "a{}";
+				return "a" + getTypeSignature(l.get(0));
+			} else if(v instanceof Map) {
+				Map<?, ?> m = (Map<?, ?>) v;
+				if(m.isEmpty()) return "a{}";
+				Map.Entry<?, ?> entry = m.entrySet().iterator().next();
+				return "a{" + getTypeSignature(entry.getKey()) + getTypeSignature(entry.getValue()) + "}";
+			}
+			return "s";
+		}
+
         public Metadata build() throws IllegalArgumentException {
             if(!internalMap.containsKey("mpris:trackid")) {
                 throw new IllegalArgumentException("mpris:trackid not set");
